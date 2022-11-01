@@ -182,7 +182,7 @@ class RandomTrainingDatasetTrainer(Trainer):
 
 
 @dataclass
-class RetroDataCollatorWithPadding:
+class InjectDataCollatorWithPadding:
     tokenizer: PreTrainedTokenizerBase
     padding: Union[bool, str, PaddingStrategy] = "max_length"
     truncation: Union[bool, str, PaddingStrategy] = True

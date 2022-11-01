@@ -27,7 +27,7 @@ https://www.ukp.tu-darmstadt.de/
 https://www.tu-darmstadt.de/
 
 
-Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
+Don't hesitate to e-mail us or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
 > This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication. 
 
@@ -83,28 +83,44 @@ $ pip install -r requirements.txt
 ```
 
 ## Running the experiments
-**(change this as needed!)**
+
+To run the `INJECT` model with `k=2` context candidates retrieved from `conceptnet` for dataset `argmin`:
 
 ```
-$cd bla/bla/bla
-$some_cool_commands_here
+$ python run.py --task argmin --variation conceptnet --setting RETRO_JOINED_TOPIC --k 2 --output_dir /path/to/results/
 ```
-
-### Expected results
-**(change this as needed!)**
-
-After running the experiments, you should expect the following results:
-
-(Feel free to describe your expected results here...)
 
 ### Parameter description
 **(change this as needed!)**
 
-* `x, --xxxx`
-  * This parameter does something nice
-...
-* `z, --zzzz`
-  * This parameter does something even nicer
+* `--setting`
+  * The experiment setting which defines which context injection to use from `[BASELINE, BASELINE_TOPIC, BASELINE_JOINED_TOPIC, INJECT_TOPIC, INJECT_JOINED_TOPIC]`
+* `--k`
+  * The number of context candidates to use (default 2)
+* `--is_cross_topic`
+  * Declare if the evaluation setting should be cross-target (True) or in-target (False) 
+* `--input_encoder_layers`
+  * The layer of the input encoder at which cross-attention should be applied to (default 11)  
+* `--context_encoder_layers`
+  * The layer of the context encoder at which cross-attention should be applied to (default 11)
+* `--task`
+  * The task which is used (choose from `[emergent,argmin,vast,poldeb,mtsd,rumor,wtwt,iac1,scd,semeval2019t7,semeval2016task6,perspectrum,ibmcs,arc,fnc1,snopes]`) 
+* `--variation`
+  * The context source to use (choose from `[conceptnet, causenet, t0pp_key_np, t0pp_key_np_target]`) 
+* `--model_name`
+  * The backbone transformer model which is used for the encoders (e.g. `bert-base-uncased`) 
+* `--output_dir`
+  * The directory to write the experiment outputs 
+* `--data_folder`
+  * The directory where the data files are stored 
+* `--shared_model`
+  * Both input encoder and context encoder use shared weights 
+* `--frozen_model`
+  * Only train classification head, freeze basemodel parameters of both encoders 
+* `--truncation_length`
+  * Cut input at `truncation_length` 
+* `--random_seed` 
+* `--batch_size` 
 
 
 ## Citing

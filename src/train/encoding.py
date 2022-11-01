@@ -56,7 +56,7 @@ def baseline_joined_topic_encoding_function(samples, tokenizer):
                          , axis=1)
 
 
-def retro_joined_topic_encoding_function(samples, tokenizer):
+def inject_joined_topic_encoding_function(samples, tokenizer):
     input_ids = samples.apply(lambda row: encode_sentence_topic(tokenizer, row["sentence"], row["topic"]), axis=1)
     context_ids = samples.apply(
         lambda row: [tokenizer.encode(text=ele) for ele in row["context"]],
@@ -65,14 +65,14 @@ def retro_joined_topic_encoding_function(samples, tokenizer):
     return input_ids, context_ids
 
 
-def retro_joined_double_topic_encoding_function(samples, tokenizer):
+def inject_joined_double_topic_encoding_function(samples, tokenizer):
     input_ids = samples.apply(lambda row: encode_sentence_topic(tokenizer, row["sentence"], row["topic"]), axis=1)
     context_ids = samples.apply(
         lambda row: [tokenizer.encode(text=row["topic"] + " [SEP] " + ele) for ele in row["context"]],
         axis=1)
 
     return input_ids, context_ids
-def retro_encoding_function(samples, tokenizer):
+def inject_encoding_function(samples, tokenizer):
     input_ids = samples.apply(lambda row: tokenizer.encode(text=row["sentence"]), axis=1)
     context_ids = samples.apply(
         lambda row: [tokenizer.encode(text=ele) for ele in row["context"]],
@@ -81,7 +81,7 @@ def retro_encoding_function(samples, tokenizer):
     return input_ids, context_ids
 
 
-def chunked_retro_encoding_function(samples, tokenizer):
+def chunked_inject_encoding_function(samples, tokenizer):
     input_ids = samples.apply(lambda row: tokenizer.encode(text=row["sentence"]), axis=1)
 
     context_ids = samples.apply(lambda row: [
@@ -96,18 +96,18 @@ def baseline_encoding_function(samples, tokenizer):
 
 
 def load_tokenized_dataset(samples, setting, tokenizer, baseline_enocding_function):
-    if setting == "RETRO" or setting == "RETRO_POOLING" or setting == "RETRO_SHORTEST" or setting == "RETRO_JOINED_TOPIC" or setting == "RETRO_JOINED_DOUBLE_TOPIC":
+    if setting == "INJECT" or setting == "INJECT_POOLING" or setting == "INJECT_SHORTEST" or setting == "INJECT_JOINED_TOPIC" or setting == "INJECT_JOINED_DOUBLE_TOPIC":
         samples["input_ids"], samples["context_ids"] = baseline_enocding_function(samples, tokenizer)
         dataset = Dataset.from_pandas(samples)
-    elif setting == "RETRO_TOPIC":
+    elif setting == "INJECT_TOPIC":
         samples["context"] = samples["topic"].apply(lambda topic: [topic])
         samples["input_ids"], samples["context_ids"] = baseline_enocding_function(samples, tokenizer)
         dataset = Dataset.from_pandas(samples)
-    elif setting == "RETRO_CONCAT" or setting == "RETRO_CONCAT_JOINED_TOPIC":
+    elif setting == "INJECT_CONCAT" or setting == "INJECT_CONCAT_JOINED_TOPIC":
         samples["context"] = samples["context"].apply(lambda context: [" ".join(context)])
         samples["input_ids"], samples["context_ids"] = baseline_enocding_function(samples, tokenizer)
         dataset = Dataset.from_pandas(samples)
-    elif setting == "RETRO_RANDOM_INPUT":
+    elif setting == "INJECT_RANDOM_INPUT":
         samples["context"] = samples["topic"].apply(lambda topic: [lorem.sentence()])
         samples["input_ids"], samples["context_ids"] = baseline_enocding_function(samples, tokenizer)
         dataset = Dataset.from_pandas(samples)
@@ -146,15 +146,15 @@ encoding_functions = {
     "BASELINE_JOINED_TOPIC": baseline_joined_topic_encoding_function,
     "OTHER_TOPIC": other_topic_encoding_function,
     "RANDOM_INPUT": random_input_encoding_function,
-    "RETRO": retro_encoding_function,
-    "RETRO_CONCAT": retro_encoding_function,
-    "RETRO_POOLING": retro_encoding_function,
-    "RETRO_TOPIC": retro_encoding_function,
-    "RETRO_JOINED_TOPIC": retro_joined_topic_encoding_function,
-    "RETRO_JOINED_DOUBLE_TOPIC": retro_joined_double_topic_encoding_function,
-    "RETRO_CONCAT_JOINED_TOPIC": retro_joined_topic_encoding_function,
-    "RETRO_SHORTEST": retro_encoding_function,
-    "RETRO_RANDOM_INPUT": retro_encoding_function,
-    "MULTI_CLS_CONCAT_JOINED_TOPIC": retro_joined_topic_encoding_function,
-    "MULTI_CLS_JOINED_TOPIC_MTL": retro_joined_topic_encoding_function
+    "INJECT": inject_encoding_function,
+    "INJECT_CONCAT": inject_encoding_function,
+    "INJECT_POOLING": inject_encoding_function,
+    "INJECT_TOPIC": inject_encoding_function,
+    "INJECT_JOINED_TOPIC": inject_joined_topic_encoding_function,
+    "INJECT_JOINED_DOUBLE_TOPIC": inject_joined_double_topic_encoding_function,
+    "INJECT_CONCAT_JOINED_TOPIC": inject_joined_topic_encoding_function,
+    "INJECT_SHORTEST": inject_encoding_function,
+    "INJECT_RANDOM_INPUT": inject_encoding_function,
+    "MULTI_CLS_CONCAT_JOINED_TOPIC": inject_joined_topic_encoding_function,
+    "MULTI_CLS_JOINED_TOPIC_MTL": inject_joined_topic_encoding_function
 }

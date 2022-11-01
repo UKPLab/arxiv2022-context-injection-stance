@@ -4,18 +4,15 @@ import pathlib
 import uuid
 
 import click
-import mlflow
 import numpy
 import pandas
 from sklearn.model_selection import train_test_split
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer, \
     DataCollatorWithPadding
-import os
 
-from model.retro_bert import ArgRetro
-from train.dropbox_util import upload
+from model import Inject
 from train.encoding import encoding_functions, select_context_elements, load_tokenized_dataset
-from train.utils import RetroDataCollatorWithPadding, topic_split_function, compute_metrics, seed_all, check_for_run, \
+from train.utils import InjectDataCollatorWithPadding, topic_split_function, compute_metrics, seed_all, check_for_run, \
     truncate_sentence, get_indomain_splits
 
 
@@ -81,17 +78,17 @@ def load_samples(task, variation, setting, k, nfolds, fold, is_cross_topic, data
 
 
 @click.command()
-@click.option('--setting', type=str, default="RETRO_JOINED_TOPIC")
+@click.option('--setting', type=str, default="INJECT_JOINED_TOPIC")
 @click.option('--k', type=int, default=2)
 @click.option('--fold', type=int, default=0)
 @click.option('--nfolds', type=int, default=1)
 @click.option('--is_cross_topic', type=bool, default=False)
-@click.option('--input_encoder_layers', type=str, default="2")
-@click.option('--context_encoder_layers', type=str, default="2")
+@click.option('--input_encoder_layers', type=str, default="11")
+@click.option('--context_encoder_layers', type=str, default="11")
 @click.option('--task', type=str, default="semeval2019t7")
 @click.option('--variation', type=str, default="conceptnet")
 @click.option('--model_name', type=str, default="bert-base-uncased")
-@click.option('--retrieval_model_name', type=str)#, default="prajjwal1/bert-mini")
+@click.option('--retrieval_model_name', type=str)
 @click.option('--output_dir', type=str, default="./")
 @click.option('--data_folder', type=str, default="../data/")
 @click.option('--random_seed', type=int, default=1)
@@ -119,10 +116,6 @@ def main(setting, k, fold, nfolds, is_cross_topic, input_encoder_layers, context
 
     assert fold < nfolds
 
-    mlflow_url = "http://10.176.133.1:8000/" if os.system(
-        "ping -c 1 10.176.133.1") == 0 else "http://6.tcp.eu.ngrok.io:12311"
-    mlflow.set_tracking_uri(mlflow_url)
-
     input_encoder_cross_attn_layers = [int(ele) for ele in input_encoder_layers.split(",")]
     context_encoder_cross_attn_layers = [int(ele) for ele in context_encoder_layers.split(",")]
 
@@ -144,16 +137,16 @@ def main(setting, k, fold, nfolds, is_cross_topic, input_encoder_layers, context
         run_parameters["input_encoder_cross_attn_layers"] = input_encoder_cross_attn_layers
         run_parameters["context_encoder_cross_attn_layers"] = context_encoder_cross_attn_layers
 
-    run_exist = check_for_run(
-        mlflow_url,
-        task,
-        run_parameters,
-        experiment_prefix
-    )
-
-    if run_exist:
-        print("Run already done")
-        return
+    # run_exist = check_for_run(
+    #     mlflow_url,
+    #     task,
+    #     run_parameters,
+    #     experiment_prefix
+    # )
+    #
+    # if run_exist:
+    #     print("Run already done")
+    #     return
 
     local_run_id = str(uuid.uuid1())
     run_dir = output_dir + "/output-" + local_run_id
@@ -178,7 +171,7 @@ def main(setting, k, fold, nfolds, is_cross_topic, input_encoder_layers, context
         if setting in ["RETRO_TOPIC", "RETRO_RANDOM_INPUT", "RETRO_CONCAT", "RETRO_CONCAT_JOINED_TOPIC"]:
             k = 1
 
-        model = ArgRetro(
+        model = Inject(
             model_name,
             retrieval_model_name = retrieval_model_name,
             input_encoder_cross_attn_layers=input_encoder_cross_attn_layers,
@@ -212,13 +205,12 @@ def main(setting, k, fold, nfolds, is_cross_topic, input_encoder_layers, context
     test_dataset = load_tokenized_dataset(test_samples, setting, tokenizer, encoding_function)
 
     if "RETRO" in setting:
-        data_collator = RetroDataCollatorWithPadding(tokenizer=tokenizer)
+        data_collator = InjectDataCollatorWithPadding(tokenizer=tokenizer)
     else:
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer, max_length=512, padding="max_length")
 
 
-    experiment_name = experiment_prefix + "-" + task + "-retro"
-    mlflow.set_experiment(experiment_name)
+    # experiment_name = experiment_prefix + "-" + task + "-retro"
 
     gradient_accumulation_steps = gradient_accumulation_steps
     per_device_train_batch_size = int(batch_size / gradient_accumulation_steps)
@@ -277,24 +269,6 @@ def main(setting, k, fold, nfolds, is_cross_topic, input_encoder_layers, context
 
     prediction_file = run_dir + "/predictions.csv"
     prediction_frame.to_csv(prediction_file, index=False)
-
-    upload(prediction_file, "/retro-cl-preds/output-" + local_run_id + "/predictions.csv")
-    os.system("rm " + prediction_file)
-
-    if random_seed == 0:
-        last_checkpoint_dir = max(pathlib.Path(run_dir).glob('checkpoint-*'), key=os.path.getmtime)
-        last_checkpoint_state = json.load(open(str(last_checkpoint_dir) + "/trainer_state.json", "r"))
-
-        best_checkpoint_dir = last_checkpoint_state["best_model_checkpoint"]
-
-        tar_file = output_dir + "/" + local_run_id +  ".tar.gz"
-        os.system("tar -zcvf " + tar_file + " " + best_checkpoint_dir)
-        upload(tar_file, "/retro-cl-models/" + local_run_id +  ".tar.gz")
-        os.system("rm " + tar_file)
-
-    os.system("rm -rf " + output_dir + "output-" + local_run_id)
-
-    # prevent to fill up disk
 
 
 if __name__ == '__main__':

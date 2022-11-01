@@ -23,7 +23,7 @@ def cast_tuple(val, num = 1):
     return val if isinstance(val, tuple) else ((val,) * num)
 
 
-class RetroCrossAttention(nn.Module):
+class InjectCrossAttention(nn.Module):
     def __init__(self, config, k_v_dim, q_dim, position_embedding_type=None):
         super().__init__()
 
@@ -198,7 +198,7 @@ class BertLayerCA(nn.Module):
         self.seq_len_dim = 1
         self.attention = BertAttention(config)
         #TODO: check if we need to randomly initialize
-        self.crossattention = RetroCrossAttention(config, k_v_dim, q_dim, position_embedding_type="absolute")
+        self.crossattention = InjectCrossAttention(config, k_v_dim, q_dim, position_embedding_type="absolute")
         self.intermediate = BertIntermediate(config)
         self.output = BertOutput(config)
 
@@ -283,7 +283,7 @@ def create_encoder_with_crossattention(encoder, enc_cross_attn_layers, config, k
     return encoder
 
 
-class ArgRetro(nn.Module):
+class Inject(nn.Module):
 
     def __init__(self,
                  model_name,
@@ -291,7 +291,7 @@ class ArgRetro(nn.Module):
                  input_encoder_cross_attn_layers = [],
                  context_encoder_cross_attn_layers = [],
                  k = 2,
-                 setting = "RETRO",
+                 setting = "INJECT",
                  num_labels=3,
                  shared_model=False,
                  frozen_model=False,
@@ -342,7 +342,10 @@ class ArgRetro(nn.Module):
             self.context_encoder_hidden_dim = context_encoder.config.hidden_size
 
         # encoder part
-        self.context_encoder = create_encoder_with_crossattention(context_encoder.encoder, context_encoder_cross_attn_layers, config, k_v_dim=self.input_encoder_hidden_dim, q_dim=self.context_encoder_hidden_dim)
+        self.context_encoder = create_encoder_with_crossattention(context_encoder.encoder,
+                                                                  context_encoder_cross_attn_layers, config,
+                                                                  k_v_dim=self.input_encoder_hidden_dim,
+                                                                  q_dim=self.context_encoder_hidden_dim)
 
 
         input_encoder_layers = []
@@ -350,7 +353,9 @@ class ArgRetro(nn.Module):
         for layer_num in range(config.num_hidden_layers):
             if layer_num in input_encoder_cross_attn_layers:
                 bert_layer = getattr(input_encoder.encoder, 'layer')[layer_num]
-                bert_layer_with_crossattention = copy_bert_layer(bert_layer, config, k_v_dim=self.context_encoder_hidden_dim, q_dim=self.input_encoder_hidden_dim)
+                bert_layer_with_crossattention = copy_bert_layer(bert_layer, config,
+                                                                 k_v_dim=self.context_encoder_hidden_dim,
+                                                                 q_dim=self.input_encoder_hidden_dim)
                 input_encoder_layers.append(bert_layer_with_crossattention)
             else:
                 bert_layer = getattr(input_encoder.encoder, 'layer')[layer_num]
@@ -376,7 +381,8 @@ class ArgRetro(nn.Module):
             if type(layer) == BertLayerCA:
                 layer.crossattention.k = new_k
 
-    def async_forward(self, input_embeddings, context_embeddings, output_hidden_states, output_attentions, extended_context_attention_mask, extended_input_attention_mask):
+    def async_forward(self, input_embeddings, context_embeddings, output_hidden_states, output_attentions,
+                      extended_context_attention_mask, extended_input_attention_mask):
 
         hidden_states = input_embeddings
         past_key_values = None
@@ -396,7 +402,8 @@ class ArgRetro(nn.Module):
             if type(layer_module) == BertLayerCA:
                 # retrieve encoding for context
                 context = self.context_encoder(context_embeddings, attention_mask = extended_context_attention_mask,
-                                               encoder_hidden_states = hidden_states, encoder_attention_mask = extended_input_attention_mask)
+                                               encoder_hidden_states = hidden_states,
+                                               encoder_attention_mask = extended_input_attention_mask)
                 conditioned_encoder_hidden_states = context.last_hidden_state
             layer_head_mask = head_mask[i] if head_mask is not None else None
             past_key_value = past_key_values[i] if past_key_values is not None else None
@@ -425,9 +432,11 @@ class ArgRetro(nn.Module):
                     all_cross_attentions = all_cross_attentions + (layer_outputs[2],)
 
 
-        return hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, all_input_cross_attentions, all_context_cross_attentions
+        return hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, \
+               all_input_cross_attentions, all_context_cross_attentions
 
-    def sync_forward(self, input_embeddings, context_embeddings, output_hidden_states, output_attentions, extended_context_attention_mask, extended_input_attention_mask):
+    def sync_forward(self, input_embeddings, context_embeddings, output_hidden_states, output_attentions,
+                     extended_context_attention_mask, extended_input_attention_mask):
 
         input_hidden_states = input_embeddings
         context_hidden_states = context_embeddings
@@ -515,7 +524,8 @@ class ArgRetro(nn.Module):
                     all_input_self_attentions.append(input_attentions)
                     all_context_self_attentions.append(context_attentions)
 
-        return input_hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, all_input_cross_attentions, all_context_cross_attentions
+        return input_hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, \
+               all_input_cross_attentions, all_context_cross_attentions
 
 
     def forward(
@@ -557,9 +567,21 @@ class ArgRetro(nn.Module):
         output_hidden_states = False
 
         if self.synchronised_model:
-            hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, all_input_cross_attentions, all_context_cross_attentions = self.sync_forward(input_embeddings, context_embeddings, output_hidden_states, output_attentions, extended_context_attention_mask, extended_input_attention_mask)
+            hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, \
+            all_input_cross_attentions, all_context_cross_attentions = self.sync_forward(input_embeddings,
+                                                                                         context_embeddings,
+                                                                                         output_hidden_states,
+                                                                                         output_attentions,
+                                                                                         extended_context_attention_mask,
+                                                                                         extended_input_attention_mask)
         else:
-            hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, all_input_cross_attentions, all_context_cross_attentions = self.async_forward(input_embeddings, context_embeddings, output_hidden_states, output_attentions, extended_context_attention_mask, extended_input_attention_mask)
+            hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, \
+            all_input_cross_attentions, all_context_cross_attentions = self.async_forward(input_embeddings,
+                                                                                          context_embeddings,
+                                                                                          output_hidden_states,
+                                                                                          output_attentions,
+                                                                                          extended_context_attention_mask,
+                                                                                          extended_input_attention_mask)
 
         if output_hidden_states:
             all_hidden_states = all_hidden_states + (hidden_states.detach().cpu(),)
@@ -606,7 +628,8 @@ class ArgRetro(nn.Module):
             # attentions=attentions,
         )
         if output_attentions:
-            return (outputs, all_input_self_attentions, all_input_cross_attentions, all_context_self_attentions, all_context_cross_attentions)
+            return (outputs, all_input_self_attentions, all_input_cross_attentions, all_context_self_attentions,
+                    all_context_cross_attentions)
         else:
             return outputs
 
@@ -644,9 +667,21 @@ class ArgRetro(nn.Module):
         output_hidden_states = False
 
         if self.synchronised_model:
-            hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, all_input_cross_attentions, all_context_cross_attentions = self.sync_forward(input_embeddings, context_embeddings, output_hidden_states, output_attentions, extended_context_attention_mask, extended_input_attention_mask)
+            hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, \
+            all_input_cross_attentions, all_context_cross_attentions = self.sync_forward(input_embeddings,
+                                                                                         context_embeddings,
+                                                                                         output_hidden_states,
+                                                                                         output_attentions,
+                                                                                         extended_context_attention_mask,
+                                                                                         extended_input_attention_mask)
         else:
-            hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, all_input_cross_attentions, all_context_cross_attentions = self.async_forward(input_embeddings, context_embeddings, output_hidden_states, output_attentions, extended_context_attention_mask, extended_input_attention_mask)
+            hidden_states, all_hidden_states, all_input_self_attentions, all_context_self_attentions, \
+            all_input_cross_attentions, all_context_cross_attentions = self.async_forward(input_embeddings,
+                                                                                          context_embeddings,
+                                                                                          output_hidden_states,
+                                                                                          output_attentions,
+                                                                                          extended_context_attention_mask,
+                                                                                          extended_input_attention_mask)
 
         if output_hidden_states:
             all_hidden_states = all_hidden_states + (hidden_states.detach().cpu(),)
@@ -693,6 +728,7 @@ class ArgRetro(nn.Module):
             # attentions=attentions,
         )
         if output_attentions:
-            return (outputs, all_input_self_attentions, all_input_cross_attentions, all_context_self_attentions, all_context_cross_attentions)
+            return (outputs, all_input_self_attentions, all_input_cross_attentions, all_context_self_attentions,
+                    all_context_cross_attentions)
         else:
             return outputs
