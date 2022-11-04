@@ -5,7 +5,7 @@ classification tasks using a dual-encoder approach and information exchange via 
 
 
 Further details can be found in our publication [Contextual information integration for stance 
-detection via cross-attention]([https://arxiv.org/abs/TODO](https://arxiv.org/abs/2211.01874)).
+detection via cross-attention](https://arxiv.org/abs/2211.01874).
 
 
 > **Abstract:** Stance detection deals with the identification of an author's stance towards a target and is applied on various text domains like social media and news.
@@ -20,7 +20,7 @@ Our analysis shows that it is able to regularize for spurious label correlations
 
 ## Information
 
-Contact person: Tilman Beck, beck@ukp.informatik.tu-darmstadt.de
+Contact person: Tilman Beck, <lastname>@ukp.informatik.tu-darmstadt.de
 
 https://www.ukp.tu-darmstadt.de/
 
