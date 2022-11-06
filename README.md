@@ -67,6 +67,30 @@ Our dataset numbers differ slightly from the ones reported by Hardalov et al. (2
 * rumor: not all tweets could be downloaded
 * mtsd: we were provided the full dataset by the original authors
 
+To produce the final files for running the benchmark experiments you can either use the pre-computed context or compute it by your self. 
+Note you can also add other tasks. Therefore, you need to create a new folder within the processed benchmark folder (e.g. `benchmark_processed`) for each task and compute the context on your own. There you need to put the samples as `.jsonl` in the same format as mentioned above.
+
+### Use Pre-Computed Context
+
+The pre-computed context is available to download (TBD) and is the same as we used in our paper. It includes the following sources:
+* `CauseNet` [Heindorf et al. 2020](https://papers.dice-research.org/2020/CIKM-20/heindorf_2020a_public.pdf)
+* `ConceptNet` [here](https://conceptnet.io/)
+* `T0pp-NP` using [Sanh et al. 2021](https://arxiv.org/abs/2110.08207)
+* `T0pp-NP-Targ` using [Sanh et al. 2021](https://arxiv.org/abs/2110.08207)
+* `All` combination of the four sources above
+* `Random*` context sampled from the Gutenberg Project [here](https://www.nltk.org/book/ch02.html)
+
+After downloading the pre-computed context, you need to extract into a folder (e.g. `benchmark_context`). The following will then compose the final files to run the experiments.
+```
+$ finalize_sd_benchmark.py --root_dir /path/to/benchmark_processed --context_dir /path/to/benchmark_context  --output_dir /path/to/benchmark_final
+```
+
+### Do-it-yourself
+TODO
+* download conceptnet, extract to graphfile, find relevant nodes
+* download causenet, encode causenet and task inputs, find the most closest
+* find NPs, describe them using T0pp
+
 ## Setup
 
 * Clone the repository

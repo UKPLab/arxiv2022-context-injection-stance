@@ -208,3 +208,7 @@ data/*snopes*
 /src/analysis/relevant_tokens/
 /src/analysis/correlation_matrices/
 /src/analysis/correlations/
+/data/benchmark_original/
+/data/benchmark_processed/
+/data/benchmark_context/
+/data/benchmark_final/
