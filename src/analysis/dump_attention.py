@@ -18,7 +18,7 @@ from train.utils import RetroDataCollatorWithPadding
 
 
 def download_model(run_id: str):
-    dbx = dropbox.Dropbox(app_key="rsx45nmlpp77mdy", app_secret="yopki6xvye8g81n", oauth2_refresh_token="O7naVr6RvusAAAAAAAAAAZUEMKXevXbcZDzDnDXtIw4U-Q0FeAcywwCKAnIiRvt5", timeout=30000)
+    dbx = dropbox.Dropbox(app_key="app_key", app_secret="app_secret", oauth2_refresh_token="oauth2_refresh_token", timeout=30000)
     #dbx.refresh_access_token()
 
     local_path = "tmp/" + dump_path
@@ -34,7 +34,7 @@ def download_model(run_id: str):
 
 
 def download_predictions(run_id: str):
-    dbx = dropbox.Dropbox(app_key="rsx45nmlpp77mdy", app_secret="yopki6xvye8g81n", oauth2_refresh_token="O7naVr6RvusAAAAAAAAAAZUEMKXevXbcZDzDnDXtIw4U-Q0FeAcywwCKAnIiRvt5", timeout=30000)
+    dbx = dropbox.Dropbox(app_key="app_key", app_secret="app_secret", oauth2_refresh_token="oauth2_refresh_token", timeout=30000)
     #dbx.refresh_access_token()
 
     local_path = "tmp/" + run_id
@@ -50,7 +50,7 @@ def download_predictions(run_id: str):
     return predictions
 
 
-mlflow_url = "http://10.176.133.1:8000/" if os.system("ping -c 1 10.176.133.1") is 0 else "http://6.tcp.eu.ngrok.io:12311"
+mlflow_url = "url_to_mlflow
 client = MlflowClient(mlflow_url)
 
 task = "ukp-sent"
