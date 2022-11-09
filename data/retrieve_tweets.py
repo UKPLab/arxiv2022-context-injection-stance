@@ -15,10 +15,10 @@ def chunker(seq, size):
 
 # Twitter Developer keys here
 # It is CENSORED
-consumer_key = 'YoDZhQthEe7sO5mRGyEbwj8EP'
-consumer_key_secret = 'x1xsnq5AvRm6kaDLmaXxheliDGuERUnnNT5wXo1IpZGED04nyV'
-access_token = '3994566975-XNVXnmfL9PYUqpM84YgmzBcVlmbEVRK4rN8BoaS'
-access_token_secret = 'fwuwAPKqGfsREVFlxnodFodUy0oAbWp1RrSRQ3wMkchvO'
+consumer_key = 'consumer_key'
+consumer_key_secret = 'consumer_key_secret'
+access_token = 'access_token'
+access_token_secret = 'access_token_secret'
 
 def retrieve_rumor_data(path, api):
     print('Fetching RUMOR data')
