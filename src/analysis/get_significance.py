@@ -12,11 +12,11 @@ from sklearn.metrics import f1_score
 from statsmodels.stats.contingency_tables import SquareTable
 from tqdm import tqdm
 
-mlflow_url = "http://10.176.133.1:8000/" if os.system("ping -c 1 10.176.133.1") is 0 else "http://6.tcp.eu.ngrok.io:12311"
+mlflow_url = "ml_flwow_url"
 client = MlflowClient(mlflow_url)
 
 def check_dropbox_file_exists(path, base_folder = "retro-cl-models"):
-    dbx = dropbox.Dropbox(app_key="rsx45nmlpp77mdy", app_secret="yopki6xvye8g81n", oauth2_refresh_token="O7naVr6RvusAAAAAAAAAAZUEMKXevXbcZDzDnDXtIw4U-Q0FeAcywwCKAnIiRvt5", timeout=30000)
+    dbx = dropbox.Dropbox(app_key="app_key", app_secret="app_secret", oauth2_refresh_token="oauth2_refresh_token", timeout=30000)
     dbx.refresh_access_token()
     try:
         metadata = dbx.files_get_metadata("/" + base_folder + "/"+path)
@@ -73,7 +73,7 @@ def McNemarPostHoc(data, field1, field2, exact='25'):
     return McNemarResults
 
 def download_predictions(run_id: str):
-    dbx = dropbox.Dropbox(app_key="rsx45nmlpp77mdy", app_secret="yopki6xvye8g81n", oauth2_refresh_token="O7naVr6RvusAAAAAAAAAAZUEMKXevXbcZDzDnDXtIw4U-Q0FeAcywwCKAnIiRvt5", timeout=30000)
+    dbx = dropbox.Dropbox(app_key="app_key", app_secret="app_secret", oauth2_refresh_token="oauth2_refresh_token", timeout=30000)
     #dbx.refresh_access_token()
 
     local_path = "tmp/" + run_id
