@@ -111,7 +111,7 @@ $ pip install -r requirements.txt
 To run the `INJECT` model with `k=2` context candidates retrieved from `conceptnet` for dataset `argmin`:
 
 ```
-$ python run.py --task argmin --variation conceptnet --setting RETRO_JOINED_TOPIC --k 2 --output_dir /path/to/results/
+$ python run.py --task argmin --variation conceptnet --setting INJECT_JOINED_TOPIC --k 2 --output_dir /path/to/results/
 ```
 
 ### Parameter description
