@@ -83,8 +83,8 @@ api = tweepy.API(auth)
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--rumor_path", default='/home/tilman/Repositories/arg-retro/data/benchmark/data/rumor')
-parser.add_argument("--mtsd_path", default='/home/tilman/Repositories/arg-retro/data/benchmark/data/mtsd')
+parser.add_argument("--rumor_path", default='./rumor')
+parser.add_argument("--mtsd_path", default='./mtsd')
 args = parser.parse_args()
 
 
