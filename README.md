@@ -11,7 +11,7 @@ Further details can be found in our publication [Robust Integration of Contextua
 
 ## Information
 
-Contact person: Tilman Beck, firstname.lastname@tu-darmstadt.de
+Contact person: Tilman Beck, tilman.beck@tu-darmstadt.de
 
 https://www.ukp.tu-darmstadt.de/
 
