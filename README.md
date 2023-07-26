@@ -4,19 +4,10 @@ This repository includes the code for integrating contextual information for sup
 classification tasks using a dual-encoder approach and information exchange via cross-attention.
 
 
-Further details can be found in our publication [Contextual information integration for stance 
-detection via cross-attention](https://arxiv.org/abs/2211.01874).
+Further details can be found in our publication [Robust Integration of Contextual Information for Cross-Target Stance Detection](https://aclanthology.org/2023.starsem-1.43/).
 
 
-> **Abstract:** Stance detection deals with the identification of an author's stance towards a target and is applied on various text domains like social media and news.
-In many cases, inferring the stance is challenging due to insufficient access to contextual information.
-Complementary context can be found in knowledge bases but integrating the context into pretrained language models is non-trivial due to their graph structure.
-In contrast, we explore an approach to integrate contextual information as text which aligns better with transformer architectures.
-Specifically, we train a model consisting of dual encoders which exchange information via cross-attention.
-This architecture allows for integrating contextual information from heterogeneous sources.
-We evaluate context extracted from structured knowledge sources and from prompting large language models.
-Our approach is able to outperform competitive baselines (1.9pp on average) on a large and diverse stance detection benchmark, both (1) in-domain, i.e. for seen targets, and (2) out-of-domain, i.e. for targets unseen during training.
-Our analysis shows that it is able to regularize for spurious label correlations with target-specific cue words.
+> **Abstract:** Stance detection deals with identifying an author’s stance towards a target. Most existing stance detection models are limited because they do not consider relevant contextual information which allows for inferring the stance correctly.Complementary context can be found in knowledge bases but integrating the context into pretrained language models is non-trivial due to the graph structure of standard knowledge bases. To overcome this, we explore an approach to integrate contextual information as text which allows for integrating contextual information from heterogeneous sources, such as structured knowledge sources and by prompting large language models.Our approach can outperform competitive baselines on a large and diverse stance detection benchmark in a cross-target setup, i.e. for targets unseen during training. We demonstrate that it is more robust to noisy context and can regularize for unwanted correlations between labels and target-specific vocabulary. Finally, it is independent of the pretrained language model in use.
 
 ## Information
 
@@ -152,11 +143,17 @@ $ python run.py --task argmin --variation conceptnet --setting INJECT_JOINED_TOP
 Please use the following citation:
 
 ```
-@article{beck-waldis-gurevych:2022,
-  title = {Contextual information integration for stance detection via cross-attention},
-  author = {Beck, Tilman and Waldis, Andreas and Gurevych, Iryna},
-  journal = {arXiv},
-  year = {2022},
-  url = "https://arxiv.org/abs/2211.01874"
+@inproceedings{beck-etal-2023-robust,
+    title = "Robust Integration of Contextual Information for Cross-Target Stance Detection",
+    author = "Beck, Tilman  and
+      Waldis, Andreas  and
+      Gurevych, Iryna",
+    booktitle = "Proceedings of the The 12th Joint Conference on Lexical and Computational Semantics (*SEM 2023)",
+    month = jul,
+    year = "2023",
+    address = "Toronto, Canada",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2023.starsem-1.43",
+    pages = "494--511"
 }
 ```
